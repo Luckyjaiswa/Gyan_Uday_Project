@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}GyanUday University{% endblock %} — Academic Portal</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js (used in dashboard and reports) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <!-- Project CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div class="app-wrapper">
+
+    <!-- ═══════════════════════════════════════════════════
+         SIDEBAR
+    ═══════════════════════════════════════════════════ -->
+    <aside class="sidebar">
+
+      <!-- Brand -->
+      <div class="sidebar-brand">
+        <div class="brand-logo">GU</div>
+        <div class="brand-text">
+          <h2>GyanUday University</h2>
+          <p>Academic Portal v2.1</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+
+        <div class="nav-section">
+          <span class="nav-section-label">Overview</span>
+          <a href="{% url 'dashboard:home' %}" class="nav-item {% block nav_dashboard %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+            Dashboard
+          </a>
+          <a href="#" class="nav-item {% block nav_students %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+            Students
+          </a>
+          <a href="#" class="nav-item {% block nav_courses %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 8h8M2 13h5"/></svg>
+            Courses
+          </a>
+          <a href="#" class="nav-item {% block nav_attendance %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/></svg>
+            Attendance
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Academics</span>
+          <a href="#" class="nav-item {% block nav_results %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L10 6h5l-4 3 2 5L8 11l-5 4 2-5-4-3h5z"/></svg>
+            Examinations
+          </a>
+          <a href="#" class="nav-item {% block nav_marks %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1" width="10" height="14" rx="1.5"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+            Results
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Admin</span>
+          <a href="#" class="nav-item {% block nav_faculty %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/><path d="M2 14c0-2.8 2.2-5 5-5h2c2.8 0 5 2.2 5 5"/><path d="M11 7l2 2 3-3"/></svg>
+            Faculty
+          </a>
+          <a href="#" class="nav-item {% block nav_fees %}{% endblock %}">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12V6l6-4 6 4v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/><path d="M6 13V9h4v4"/></svg>
+            Fee Management
+          </a>
+        </div>
+
+      </nav>
+
+      <!-- User info footer -->
+      <div class="sidebar-footer">
+        {% if request.user.is_authenticated %}
+          <div class="user-avatar">
+            {{ request.user.get_initials }}
+          </div>
+          <a href="{% url 'accounts:profile' %}" class="user-info" style="text-decoration:none;">
+            <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+            <span class="user-role">{{ request.user.get_role_display_label }}</span>
+          </a>
+          <a href="{% url 'accounts:logout' %}" class="logout-btn" title="Logout">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6"/></svg>
+          </a>
+        {% endif %}
+      </div>
+
+    </aside><!-- /sidebar -->
+
+
+    <!-- ═══════════════════════════════════════════════════
+         MAIN CONTENT AREA
+    ═══════════════════════════════════════════════════ -->
+    <div class="main-content">
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+          {% block page_subtitle %}{% endblock %}
+        </div>
+        <div class="topbar-right">
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <!-- Flash messages -->
+      {% if messages %}
+        <div class="messages-container">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+              <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Page content -->
+      <main class="page-content">
+        {% block content %}{% endblock %}
+      </main>
+
+    </div><!-- /main-content -->
+
+  </div><!-- /app-wrapper -->
+
+  <!-- Project JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

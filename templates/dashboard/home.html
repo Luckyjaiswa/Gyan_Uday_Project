@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block page_subtitle %}
+  <span class="page-meta">{{ academic_year }} &middot; {{ semester }}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-outline">Export Report</button>
+  <a href="{% url 'students:create' %}" class="btn btn-primary">+ Enroll Student</a>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     KPI CARDS
+══════════════════════════════════════════════ -->
+<div class="kpi-grid">
+
+  <!-- Total Students -->
+  <div class="kpi-card">
+    <div class="kpi-icon kpi-icon--blue">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+    </div>
+    <span class="kpi-label">Total Students</span>
+    <span class="kpi-value kpi-value--blue">{{ total_students|floatformat:"0" }}</span>
+    <span class="kpi-delta kpi-delta--{{ total_students_delta_type }}">
+      {% if total_students_delta_type == 'up' %}▲{% else %}▼{% endif %}
+      {{ total_students_delta }} vs last sem
+    </span>
+  </div>
+
+  <!-- Avg Attendance -->
+  <div class="kpi-card">
+    <div class="kpi-icon kpi-icon--green">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/></svg>
+    </div>
+    <span class="kpi-label">Avg. Attendance</span>
+    <span class="kpi-value kpi-value--green">{{ avg_attendance }}%</span>
+    <span class="kpi-delta kpi-delta--{{ avg_attendance_delta_type }}">
+      {% if avg_attendance_delta_type == 'up' %}▲{% else %}▼{% endif %}
+      {{ avg_attendance_delta }} this month
+    </span>
+  </div>
+
+  <!-- Fee Collection -->
+  <div class="kpi-card">
+    <div class="kpi-icon kpi-icon--amber">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1" width="10" height="14" rx="1.5"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+    </div>
+    <span class="kpi-label">Fee Collection</span>
+    <span class="kpi-value kpi-value--amber">{{ fee_collected }}</span>
+    <span class="kpi-delta kpi-delta--{{ fee_delta_type }}">▼ {{ fee_delta }}</span>
+  </div>
+
+  <!-- Active Courses -->
+  <div class="kpi-card">
+    <div class="kpi-icon kpi-icon--purple">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>
+    </div>
+    <span class="kpi-label">Active Courses</span>
+    <span class="kpi-value kpi-value--purple">{{ active_courses }}</span>
+    <span class="kpi-delta kpi-delta--neutral">Across {{ total_departments }} departments</span>
+  </div>
+
+</div><!-- /kpi-grid -->
+
+
+<!-- ══════════════════════════════════════════════
+     CHARTS ROW
+══════════════════════════════════════════════ -->
+<div class="charts-row">
+
+  <!-- Enrollment Trend (Bar Chart) -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Enrollment Trend</h3>
+        <p class="card-subtitle">Students enrolled per semester (2022–2026)</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Chart legend -->
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#2B5CE6;"></span>CS &amp; IT</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1D9E75;"></span>Engineering</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#BA7517;"></span>Commerce</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#534AB7;"></span>Arts &amp; Science</span>
+      </div>
+      <div class="chart-wrap" style="height:200px;">
+        <canvas id="enrollChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department Distribution (Doughnut) -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Dept. Distribution</h3>
+        <p class="card-subtitle">Current semester</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap" style="height:220px;">
+        <canvas id="deptChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /charts-row -->
+
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM GRID: Students Table + Activity Feed
+══════════════════════════════════════════════ -->
+<div class="bottom-grid">
+
+  <!-- Recent Students Table -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Recent Students</h3>
+        <p class="card-subtitle">Latest enrollments this semester</p>
+      </div>
+      <a href="{% url 'students:list' %}" class="btn btn-sm btn-outline">View all →</a>
+    </div>
+    <div class="card-body card-body--no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Department</th>
+            <th>Attendance</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in recent_students %}
+          <tr>
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm avatar-sm--{{ student.status|lower|slugify }}">{{ student.initials }}</div>
+                <span>{{ student.name }}</span>
+              </div>
+            </td>
+            <td class="text-muted">{{ student.dept }}</td>
+            <td>
+              <div class="att-cell">
+                <div class="att-bar">
+                  <div class="att-bar__fill
+                    {% if student.attendance >= 85 %}att-bar__fill--green
+                    {% elif student.attendance >= 70 %}att-bar__fill--amber
+                    {% else %}att-bar__fill--red{% endif %}"
+                    style="width:{{ student.attendance }}%;">
+                  </div>
+                </div>
+                <span class="att-value">{{ student.attendance }}%</span>
+              </div>
+            </td>
+            <td>
+              {% if student.status == 'Active' %}
+                <span class="badge badge--green">Active</span>
+              {% elif student.status == 'Low Att.' %}
+                <span class="badge badge--amber">Low Att.</span>
+              {% else %}
+                <span class="badge badge--red">At Risk</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /recent students -->
+
+  <!-- Activity Feed -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Recent Activity</h3>
+        <p class="card-subtitle">System events &amp; alerts</p>
+      </div>
+      <span class="badge badge--blue badge--pulse">Live</span>
+    </div>
+    <div class="card-body">
+      <div class="activity-feed">
+        {% for item in activities %}
+        <div class="activity-item">
+          <span class="activity-dot activity-dot--{{ item.color }}"></span>
+          <div class="activity-body">
+            <p class="activity-text">{{ item.text }}</p>
+            <span class="activity-meta">{{ item.time }} &middot; {{ item.by }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div><!-- /activity feed -->
+
+</div><!-- /bottom-grid -->
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ─────────────────────────────────────────────────────────
+// Chart data injected from Django context (server-side)
+// ─────────────────────────────────────────────────────────
+const chartLabels     = {{ chart_labels|safe }};
+const chartCS         = {{ chart_cs|safe }};
+const chartEngineering= {{ chart_engineering|safe }};
+const chartCommerce   = {{ chart_commerce|safe }};
+const chartArts       = {{ chart_arts|safe }};
+const deptLabels      = {{ dept_labels|safe }};
+const deptData        = {{ dept_data|safe }};
+
+
+// ─────────────────────────────────────────────────────────
+// Enrollment Trend — Stacked Bar Chart
+// ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('enrollChart'), {
+  type: 'bar',
+  data: {
+    labels: chartLabels,
+    datasets: [
+      {
+        label: 'CS & IT',
+        data: chartCS,
+        backgroundColor: '#2B5CE6',
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+      {
+        label: 'Engineering',
+        data: chartEngineering,
+        backgroundColor: '#1D9E75',
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+      {
+        label: 'Commerce',
+        data: chartCommerce,
+        backgroundColor: '#BA7517',
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+      {
+        label: 'Arts & Science',
+        data: chartArts,
+        backgroundColor: '#534AB7',
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { mode: 'index', intersect: false },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 11, family: 'DM Sans' }, color: '#6B6A63' },
+      },
+      y: {
+        stacked: true,
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { font: { size: 11, family: 'DM Sans' }, color: '#6B6A63' },
+        border: { display: false },
+      },
+    },
+  },
+});
+
+
+// ─────────────────────────────────────────────────────────
+// Department Distribution — Doughnut Chart
+// ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('deptChart'), {
+  type: 'doughnut',
+  data: {
+    labels: deptLabels,
+    datasets: [{
+      data: deptData,
+      backgroundColor: ['#2B5CE6', '#1D9E75', '#BA7517', '#534AB7', '#9c9a92'],
+      borderWidth: 0,
+      hoverOffset: 6,
+    }],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: { size: 11, family: 'DM Sans' },
+          color: '#6B6A63',
+          boxWidth: 10,
+          boxHeight: 10,
+          padding: 12,
+        },
+      },
+    },
+  },
+});
+</script>
+{% endblock %}

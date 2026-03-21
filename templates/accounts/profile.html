@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+{% block nav_dashboard %}{% endblock %}
+
+{% block page_title %}My Profile{% endblock %}
+{% block page_subtitle %}
+  <span class="page-meta">Manage your account details</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'accounts:change_password' %}" class="btn btn-outline">Change Password</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:720px;">
+
+  <!-- Profile Header Card -->
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-body" style="display:flex;align-items:center;gap:20px;padding:24px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:#EEF2FD;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#2B5CE6;flex-shrink:0;">
+        {% if request.user.profile_picture %}
+          <img src="{{ request.user.profile_picture.url }}" alt="Profile" style="width:64px;height:64px;border-radius:50%;object-fit:cover;" />
+        {% else %}
+          {{ request.user.get_initials }}
+        {% endif %}
+      </div>
+      <div>
+        <h3 style="font-size:17px;font-weight:600;margin-bottom:3px;">{{ request.user.get_full_name|default:request.user.username }}</h3>
+        <p style="font-size:13px;color:#6B6A63;margin-bottom:4px;">{{ request.user.email }}</p>
+        <span class="badge badge--{% if request.user.role == 'admin' %}purple{% elif request.user.role == 'faculty' %}blue{% else %}green{% endif %}">
+          {{ request.user.get_role_display_label }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Form -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Edit Profile</h3>
+        <p class="card-subtitle">Update your personal information</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<p class="form-error">{{ form.first_name.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<p class="form-error">{{ form.last_name.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}<p class="form-error">{{ form.email.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<p class="form-error">{{ form.phone.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}<p class="form-error">{{ form.date_of_birth.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Profile Picture</label>
+            {{ form.profile_picture }}
+            {% if form.profile_picture.errors %}<p class="form-error">{{ form.profile_picture.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          {{ form.address }}
+          {% if form.address.errors %}<p class="form-error">{{ form.address.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="{% url 'dashboard:home' %}" class="btn btn-outline">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

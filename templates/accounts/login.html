@@ -1,0 +1,353 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — GyanUday University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F7F6F2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-wrapper {
+      display: flex;
+      width: 100%;
+      max-width: 900px;
+      min-height: 520px;
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    /* ── Left Panel ── */
+    .login-left {
+      flex: 1;
+      background: #1A1A18;
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: #2B5CE6;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .login-left-body h1 {
+      color: #fff;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 14px;
+    }
+
+    .login-left-body p {
+      color: rgba(255,255,255,0.45);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .login-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .stat-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .stat-text strong {
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+    }
+
+    /* ── Right Panel ── */
+    .login-right {
+      flex: 1;
+      padding: 48px 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-right h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1A1A18;
+      margin-bottom: 6px;
+    }
+
+    .login-right .subtitle {
+      font-size: 13.5px;
+      color: #6B6A63;
+      margin-bottom: 32px;
+    }
+
+    /* Messages */
+    .messages {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .message {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .message-error   { background: #FCEBEB; color: #993535; border: 1px solid #F7C1C1; }
+    .message-success { background: #E1F5EE; color: #0F6E56; border: 1px solid #9FE1CB; }
+    .message-info    { background: #EEF2FD; color: #185FA5; border: 1px solid #B5D4F4; }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #1A1A18;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,0,0,0.14);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: #1A1A18;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-control:focus {
+      border-color: #2B5CE6;
+      box-shadow: 0 0 0 3px rgba(43, 92, 230, 0.12);
+    }
+
+    .form-error {
+      font-size: 11.5px;
+      color: #C0392B;
+      margin-top: 4px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: #6B6A63;
+      cursor: pointer;
+    }
+
+    .checkbox-label input { cursor: pointer; }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: #2B5CE6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-login:hover { background: #2450CC; }
+    .btn-login:active { transform: scale(0.99); }
+
+    .login-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12.5px;
+      color: #9C9A92;
+    }
+
+    .login-footer a {
+      color: #2B5CE6;
+      text-decoration: none;
+    }
+
+    .login-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .login-left { display: none; }
+      .login-right { padding: 36px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+  <!-- Left decorative panel -->
+  <div class="login-left">
+    <div class="brand">
+      <div class="brand-logo">GU</div>
+      <span class="brand-name">GyanUday University</span>
+    </div>
+
+    <div class="login-left-body">
+      <h1>Academic Portal</h1>
+      <p>Manage students, courses, attendance, results, and fees — all from one place.</p>
+    </div>
+
+    <div class="login-stats">
+      <div class="stat-item">
+        <span class="stat-dot" style="background:#2B5CE6;"></span>
+        <span class="stat-text"><strong>3,248</strong> students enrolled</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-dot" style="background:#1D9E75;"></span>
+        <span class="stat-text"><strong>82.4%</strong> average attendance</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-dot" style="background:#BA7517;"></span>
+        <span class="stat-text"><strong>64</strong> active courses</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-dot" style="background:#534AB7;"></span>
+        <span class="stat-text"><strong>8</strong> departments</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="login-right">
+    <h2>Welcome back</h2>
+    <p class="subtitle">Sign in to your account to continue</p>
+
+    <!-- Flash messages -->
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}" />
+      {% endif %}
+
+      <!-- Username -->
+      <div class="form-group">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          {% for error in form.username.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          {% for error in form.password.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <!-- Non-field errors (wrong credentials) -->
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <p class="form-error" style="margin-bottom:12px;">{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+
+      <div class="form-row">
+        <label class="checkbox-label">
+          <input type="checkbox" name="remember_me" />
+          Remember me
+        </label>
+        <a href="#" style="font-size:13px;color:#2B5CE6;">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn-login">Sign in</button>
+    </form>
+
+    <p class="login-footer">
+      Academic Year 2025–26 &nbsp;&middot;&nbsp; Semester IV<br />
+      <a href="/admin/">Admin Panel</a>
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
