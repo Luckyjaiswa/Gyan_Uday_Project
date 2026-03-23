@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Student{% endblock %}
+{% block nav_students %}active{% endblock %}
+{% block page_title %}Delete Student{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;">
+  <div class="card" style="border-color:#F7C1C1;">
+    <div class="card-body" style="padding:28px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#FCEBEB;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#C0392B" stroke-width="1.5">
+          <path d="M8 6v4M8 11v1M3 14h10l-5-12-5 12z"/>
+        </svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">Remove {{ student.get_full_name }}?</h3>
+      <p style="font-size:13.5px;color:#6B6A63;line-height:1.6;">
+        This will permanently delete the student record for
+        <strong>{{ student.get_full_name }}</strong> ({{ student.roll_number }}).
+        All associated attendance and result records will also be removed.
+        This action cannot be undone.
+      </p>
+      <div style="display:flex;gap:10px;margin-top:24px;">
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn" style="background:#C0392B;color:#fff;border-color:#C0392B;">
+            Yes, Delete Student
+          </button>
+        </form>
+        <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

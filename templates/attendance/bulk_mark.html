@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+{% block page_subtitle %}<span class="page-meta">Mark attendance for an entire class at once</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'attendance:list' %}" class="btn btn-outline">← Records</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Step 1: Select course and date -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-header"><h3 class="card-title">Step 1 — Select Course &amp; Date</h3></div>
+  <div class="card-body">
+    <form method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <label class="form-label">Course *</label>
+        {{ form.course }}
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <label class="form-label">Date *</label>
+        {{ form.date }}
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Load Students</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Step 2: Mark each student -->
+{% if students_to_mark %}
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="course_id" value="{{ course.pk }}" />
+  <input type="hidden" name="date" value="{{ date }}" />
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Step 2 — Mark Attendance</h3>
+        <p class="card-subtitle">
+          {{ course.code }} — {{ course.name }} &nbsp;&middot;&nbsp; {{ date }}
+          &nbsp;&middot;&nbsp; {{ students_to_mark|length }} student{{ students_to_mark|length|pluralize }}
+        </p>
+      </div>
+      <!-- Quick select buttons -->
+      <div style="display:flex;gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline" onclick="markAll('present')" style="color:#1D9E75;">All Present</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="markAll('absent')"  style="color:#C0392B;">All Absent</button>
+      </div>
+    </div>
+    <div class="card-body card-body--no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Roll No.</th>
+            <th>Student Name</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Late</th>
+            <th>Excused</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for enr in students_to_mark %}
+          {% with s=enr.student existing_status=existing_map|default:{} %}
+          <input type="hidden" name="student_ids" value="{{ s.pk }}" />
+          <tr>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ s.roll_number }}</td>
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">{{ s.get_initials }}</div>
+                {{ s.get_full_name }}
+              </div>
+            </td>
+            {% for status_val, status_label in status_choices %}
+            <td style="text-align:center;">
+              <input
+                type="radio"
+                name="status_{{ s.pk }}"
+                value="{{ status_val }}"
+                {% if existing_map and s.pk in existing_map %}
+                  {% if existing_map|default:'' == status_val %}checked{% endif %}
+                {% elif status_val == 'present' %}checked{% endif %}
+                style="cursor:pointer;width:16px;height:16px;"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 18px;border-top:1px solid rgba(0,0,0,0.08);">
+      <button type="submit" class="btn btn-primary">Save Attendance</button>
+      <a href="{% url 'attendance:list' %}" class="btn btn-outline" style="margin-left:8px;">Cancel</a>
+    </div>
+  </div>
+</form>
+
+{% elif course %}
+<div class="card">
+  <div class="card-body" style="padding:32px;text-align:center;color:#6B6A63;">
+    No students are enrolled in {{ course.code }} yet.
+    <a href="{% url 'courses:enroll' course.pk %}" style="color:#2B5CE6;">Enroll students →</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function markAll(status) {
+  document.querySelectorAll('input[type="radio"][value="' + status + '"]').forEach(r => r.checked = true);
+}
+</script>
+{% endblock %}

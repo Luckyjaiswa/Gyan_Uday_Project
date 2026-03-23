@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance — {{ course.code }}{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Course Attendance Summary{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ course.code }} — {{ course.name }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'attendance:bulk_mark' %}?course={{ course.pk }}" class="btn btn-outline">Mark Attendance</a>
+  <a href="{% url 'courses:detail' course.pk %}" class="btn btn-outline">← Course</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h3 class="card-title">Student-wise Attendance</h3>
+      <p class="card-subtitle">{{ rows|length }} student{{ rows|length|pluralize }} &middot; ORM: values() + annotate() + Case/When</p>
+    </div>
+  </div>
+  <div class="card-body card-body--no-pad">
+    {% if rows %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Roll No.</th>
+          <th>Total</th>
+          <th>Present</th>
+          <th>Absent</th>
+          <th>Attendance %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>
+            <a href="{% url 'attendance:student_report' row.student__id %}" style="color:#2B5CE6;font-weight:500;">
+              {{ row.student__first_name }} {{ row.student__last_name }}
+            </a>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ row.student__roll_number }}</td>
+          <td style="text-align:center;">{{ row.total }}</td>
+          <td style="text-align:center;color:#1D9E75;font-weight:500;">{{ row.present }}</td>
+          <td style="text-align:center;color:#C0392B;font-weight:500;">{{ row.absent }}</td>
+          <td>
+            <div class="att-cell">
+              <div class="att-bar">
+                <div class="att-bar__fill
+                  {% if row.percentage >= 85 %}att-bar__fill--green
+                  {% elif row.percentage >= 75 %}att-bar__fill--amber
+                  {% else %}att-bar__fill--red{% endif %}"
+                  style="width:{{ row.percentage }}%;">
+                </div>
+              </div>
+              <span class="att-value">{{ row.percentage }}%</span>
+            </div>
+          </td>
+          <td>
+            {% if row.percentage >= 75 %}
+              <span class="badge badge--green">Safe</span>
+            {% else %}
+              <span class="badge badge--red">At Risk</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      No attendance records for this course yet.
+      <a href="{% url 'attendance:bulk_mark' %}?course={{ course.pk }}" style="color:#2B5CE6;">Mark attendance →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

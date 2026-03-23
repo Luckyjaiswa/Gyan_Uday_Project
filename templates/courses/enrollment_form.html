@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Enroll Student{% endblock %}
+{% block nav_courses %}active{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'courses:detail' course.pk %}" class="btn btn-outline">← Back to Course</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Enroll Student</h3>
+        <p class="card-subtitle">Course: {{ course.code }} — {{ course.name }}</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.course }}
+        <div class="form-group">
+          <label class="form-label">Select Student *</label>
+          {{ form.student }}
+          {% if form.student.errors %}<p class="form-error">{{ form.student.errors.0 }}</p>{% endif %}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn btn-primary">Enroll Student</button>
+          <a href="{% url 'courses:detail' course.pk %}" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Courses{% endblock %}
+{% block nav_courses %}active{% endblock %}
+{% block page_title %}Courses{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ total_count }} active course{{ total_count|pluralize }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'courses:create' %}" class="btn btn-primary">+ Add Course</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if courses %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Course Name</th>
+          <th>Department</th>
+          <th>Faculty</th>
+          <th>Sem</th>
+          <th>Type</th>
+          <th>Credits</th>
+          <th>Enrolled</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr>
+          <td><span class="badge badge--blue" style="font-family:'DM Mono',monospace;">{{ course.code }}</span></td>
+          <td style="font-weight:500;">{{ course.name }}</td>
+          <td style="color:#6B6A63;font-size:12px;">{{ course.department.name }}</td>
+          <td style="color:#6B6A63;font-size:12px;">{{ course.faculty.get_full_name|default:"—" }}</td>
+          <td style="color:#6B6A63;">{{ course.semester }}</td>
+          <td>
+            {% if course.course_type == 'theory' %}<span class="badge badge--purple">Theory</span>
+            {% elif course.course_type == 'lab' %}<span class="badge badge--green">Lab</span>
+            {% elif course.course_type == 'project' %}<span class="badge badge--amber">Project</span>
+            {% else %}<span class="badge badge--blue">Elective</span>{% endif %}
+          </td>
+          <td style="text-align:center;">{{ course.credits }}</td>
+          <td style="text-align:center;">
+            <span class="badge badge--green">{{ course.enrolled_count }}</span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'courses:detail' course.pk %}" class="btn btn-sm btn-outline">View</a>
+              <a href="{% url 'courses:update' course.pk %}" class="btn btn-sm btn-outline">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No courses added yet.</p>
+      <a href="{% url 'courses:create' %}" class="btn btn-primary">Add First Course</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

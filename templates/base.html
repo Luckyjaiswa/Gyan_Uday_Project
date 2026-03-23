@@ -46,15 +46,15 @@
             <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
             Dashboard
           </a>
-          <a href="#" class="nav-item {% block nav_students %}{% endblock %}">
+          <a href="{% url 'students:list' %}" class="nav-item {% block nav_students %}{% endblock %}">
             <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
             Students
           </a>
-          <a href="#" class="nav-item {% block nav_courses %}{% endblock %}">
+          <a href="{% url 'courses:list' %}" class="nav-item {% block nav_courses %}{% endblock %}">
             <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 8h8M2 13h5"/></svg>
             Courses
           </a>
-          <a href="#" class="nav-item {% block nav_attendance %}{% endblock %}">
+          <a href="{% url 'attendance:list' %}" class="nav-item {% block nav_attendance %}{% endblock %}">
             <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/></svg>
             Attendance
           </a>
@@ -74,7 +74,7 @@
 
         <div class="nav-section">
           <span class="nav-section-label">Admin</span>
-          <a href="#" class="nav-item {% block nav_faculty %}{% endblock %}">
+          <a href="{% url 'students:faculty_list' %}" class="nav-item {% block nav_faculty %}{% endblock %}">
             <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/><path d="M2 14c0-2.8 2.2-5 5-5h2c2.8 0 5 2.2 5 5"/><path d="M11 7l2 2 3-3"/></svg>
             Faculty
           </a>

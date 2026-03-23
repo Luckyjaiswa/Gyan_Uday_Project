@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.get_full_name }}{% endblock %}
+{% block nav_students %}active{% endblock %}
+
+{% block page_title %}Student Profile{% endblock %}
+{% block page_subtitle %}
+  <span class="page-meta">{{ student.roll_number }}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:update' student.pk %}" class="btn btn-outline">Edit</a>
+  <a href="{% url 'students:list' %}" class="btn btn-outline">← Back to List</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;">
+
+  <!-- LEFT: Profile Card -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:28px 20px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:#EEF2FD;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;color:#2B5CE6;margin:0 auto 14px;">
+          {% if student.photo %}
+            <img src="{{ student.photo.url }}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;" />
+          {% else %}
+            {{ student.get_initials }}
+          {% endif %}
+        </div>
+        <h3 style="font-size:17px;font-weight:600;">{{ student.get_full_name }}</h3>
+        <p style="font-size:13px;color:#6B6A63;margin-top:3px;">{{ student.email }}</p>
+        <div style="margin-top:10px;">
+          <span class="badge badge--{{ student.get_status_color }}">{{ student.get_status_display }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Summary -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Attendance</h3></div>
+      <div class="card-body" style="text-align:center;padding:20px;">
+        {% if attendance_pct %}
+          <div style="font-size:36px;font-weight:600;
+            color:{% if attendance_pct >= 85 %}#1D9E75{% elif attendance_pct >= 70 %}#BA7517{% else %}#C0392B{% endif %};">
+            {{ attendance_pct }}%
+          </div>
+          <p style="font-size:12px;color:#6B6A63;margin-top:4px;">Overall attendance</p>
+          {% if attendance_pct < 75 %}
+            <div style="margin-top:10px;padding:8px 12px;background:#FCEBEB;border-radius:8px;font-size:12px;color:#993535;">
+              Below 75% threshold — at risk
+            </div>
+          {% endif %}
+        {% else %}
+          <p style="color:#9C9A92;font-size:13px;">No attendance records yet</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Details -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Academic Info -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Academic Information</h3></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Department</p>
+            <p style="font-weight:500;">{{ student.department.name }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Year / Semester</p>
+            <p style="font-weight:500;">Year {{ student.year }} / Semester {{ student.semester }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Roll Number</p>
+            <p style="font-weight:500;font-family:'DM Mono',monospace;">{{ student.roll_number }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Admission Date</p>
+            <p style="font-weight:500;">{{ student.admission_date|date:"d M Y" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Personal Information</h3></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Phone</p>
+            <p style="font-weight:500;">{{ student.phone|default:"—" }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Gender</p>
+            <p style="font-weight:500;">{{ student.get_gender_display|default:"—" }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Date of Birth</p>
+            <p style="font-weight:500;">{{ student.date_of_birth|date:"d M Y"|default:"—" }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Blood Group</p>
+            <p style="font-weight:500;">{{ student.blood_group|default:"—" }}</p>
+          </div>
+          <div style="grid-column:1/-1;">
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Address</p>
+            <p style="font-weight:500;">{{ student.address|default:"—" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guardian Info -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Guardian Details</h3></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Guardian Name</p>
+            <p style="font-weight:500;">{{ student.guardian_name|default:"—" }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:#6B6A63;margin-bottom:3px;">Guardian Phone</p>
+            <p style="font-weight:500;">{{ student.guardian_phone|default:"—" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Danger Zone -->
+<div class="card" style="margin-top:18px;border-color:#F7C1C1;">
+  <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <p style="font-weight:500;color:#993535;">Remove Student</p>
+      <p style="font-size:12px;color:#6B6A63;margin-top:2px;">
+        Permanently delete this student record. This cannot be undone.
+      </p>
+    </div>
+    <a href="{% url 'students:delete' student.pk %}"
+       class="btn btn-outline"
+       style="color:#C0392B;border-color:#F7C1C1;"
+       data-confirm="Are you sure you want to delete {{ student.get_full_name }}?">
+      Delete Student
+    </a>
+  </div>
+</div>
+
+{% endblock %}

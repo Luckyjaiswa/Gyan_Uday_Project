@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Departments{% endblock %}
+{% block nav_students %}active{% endblock %}
+{% block page_title %}Departments{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ departments.count }} department{{ departments.count|pluralize }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:department_create' %}" class="btn btn-primary">+ Add Department</a>
+  <a href="{% url 'students:list' %}" class="btn btn-outline">← Students</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if departments %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Code</th>
+          <th>Head of Department</th>
+          <th>Students</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dept in departments %}
+        <tr>
+          <td style="font-weight:500;">{{ dept.name }}</td>
+          <td><span class="badge badge--blue">{{ dept.code }}</span></td>
+          <td style="color:#6B6A63;">{{ dept.hod.get_full_name|default:"—" }}</td>
+          <td>
+            <span class="badge badge--green">{{ dept.student_count }} students</span>
+          </td>
+          <td>
+            <a href="{% url 'students:department_update' dept.pk %}" class="btn btn-sm btn-outline">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No departments added yet.</p>
+      <a href="{% url 'students:department_create' %}" class="btn btn-primary">Add First Department</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

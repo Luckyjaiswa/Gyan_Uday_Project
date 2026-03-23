@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Report — {{ student.get_full_name }}{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Attendance Report{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ student.get_full_name }} &middot; {{ student.roll_number }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline">← Student Profile</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Overall Summary -->
+<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">
+  <div class="kpi-card">
+    <span class="kpi-label">Overall Attendance</span>
+    <span class="kpi-value {% if overall >= 75 %}kpi-value--green{% else %}kpi-value--red{% endif %}">
+      {{ overall|default:"N/A" }}{% if overall %}%{% endif %}
+    </span>
+    {% if overall and overall < 75 %}
+      <span class="kpi-delta kpi-delta--down">Below 75% — at risk</span>
+    {% elif overall %}
+      <span class="kpi-delta kpi-delta--up">Above threshold</span>
+    {% endif %}
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Courses Tracked</span>
+    <span class="kpi-value kpi-value--blue">{{ course_stats|length }}</span>
+    <span class="kpi-delta kpi-delta--neutral">courses with records</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Department</span>
+    <span class="kpi-value" style="font-size:18px;color:#534AB7;">{{ student.department.code }}</span>
+    <span class="kpi-delta kpi-delta--neutral">{{ student.department.name }}</span>
+  </div>
+</div>
+
+<!-- Per-Course Breakdown -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Course-wise Breakdown</h3>
+    <p class="card-subtitle" style="margin-left:auto;">
+      ORM used: annotate() + Count() + Case/When in a single query
+    </p>
+  </div>
+  <div class="card-body card-body--no-pad">
+    {% if course_stats %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>Total Classes</th>
+          <th>Present</th>
+          <th>Absent</th>
+          <th>Percentage</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in course_stats %}
+        <tr>
+          <td>
+            <span class="badge badge--blue" style="font-family:'DM Mono',monospace;">{{ row.course__code }}</span>
+            <span style="margin-left:8px;font-size:13px;">{{ row.course__name }}</span>
+          </td>
+          <td style="text-align:center;">{{ row.total }}</td>
+          <td style="text-align:center;color:#1D9E75;font-weight:500;">{{ row.present }}</td>
+          <td style="text-align:center;color:#C0392B;font-weight:500;">{{ row.absent }}</td>
+          <td>
+            <div class="att-cell">
+              <div class="att-bar">
+                <div class="att-bar__fill
+                  {% if row.percentage >= 85 %}att-bar__fill--green
+                  {% elif row.percentage >= 75 %}att-bar__fill--amber
+                  {% else %}att-bar__fill--red{% endif %}"
+                  style="width:{{ row.percentage }}%;">
+                </div>
+              </div>
+              <span class="att-value">{{ row.percentage }}%</span>
+            </div>
+          </td>
+          <td>
+            {% if row.percentage >= 75 %}
+              <span class="badge badge--green">Safe</span>
+            {% else %}
+              <span class="badge badge--red">At Risk</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      No attendance records found for this student.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

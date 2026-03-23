@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty{% endblock %}
+{% block nav_faculty %}active{% endblock %}
+{% block page_title %}Faculty{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ faculty.count }} faculty member{{ faculty.count|pluralize }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:list' %}" class="btn btn-outline">← Students</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if faculty %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Faculty Member</th>
+          <th>Employee ID</th>
+          <th>Department</th>
+          <th>Designation</th>
+          <th>Specialization</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in faculty %}
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="avatar-sm" style="background:#EEEDFE;color:#3C3489;">
+                {{ member.user.get_initials }}
+              </div>
+              <div>
+                <div style="font-weight:500;">{{ member.user.get_full_name }}</div>
+                <div style="font-size:11px;color:#6B6A63;">{{ member.user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ member.employee_id }}</td>
+          <td style="color:#6B6A63;">{{ member.department.name|default:"—" }}</td>
+          <td>{{ member.designation|default:"—" }}</td>
+          <td style="color:#6B6A63;">{{ member.specialization|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p>No faculty profiles added yet. Add faculty via the Admin panel.</p>
+      <a href="/admin/students/facultyprofile/add/" class="btn btn-primary" style="margin-top:12px;">Add Faculty in Admin</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

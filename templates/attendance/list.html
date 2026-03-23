@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ total }} record{{ total|pluralize }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'attendance:bulk_mark' %}" class="btn btn-primary">Mark Attendance</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filter Bar -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-body" style="padding:14px 18px;">
+    <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:160px;">
+        <label class="form-label">Course</label>
+        {{ form.course }}
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <label class="form-label">Student</label>
+        {{ form.student }}
+      </div>
+      <div style="flex:1;min-width:130px;">
+        <label class="form-label">From</label>
+        {{ form.date_from }}
+      </div>
+      <div style="flex:1;min-width:130px;">
+        <label class="form-label">To</label>
+        {{ form.date_to }}
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'attendance:list' %}" class="btn btn-outline" style="margin-left:6px;">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Records Table -->
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if records %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Student</th>
+          <th>Course</th>
+          <th>Status</th>
+          <th>Remarks</th>
+          <th>Marked By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in records %}
+        <tr>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ rec.date|date:"d M Y" }}</td>
+          <td>
+            <a href="{% url 'students:detail' rec.student.pk %}" style="color:#2B5CE6;font-weight:500;">
+              {{ rec.student.get_full_name }}
+            </a>
+            <div style="font-size:11px;color:#9C9A92;">{{ rec.student.roll_number }}</div>
+          </td>
+          <td>
+            <span class="badge badge--blue" style="font-family:'DM Mono',monospace;">{{ rec.course.code }}</span>
+          </td>
+          <td>
+            {% if rec.status == 'present' %}<span class="badge badge--green">Present</span>
+            {% elif rec.status == 'absent'  %}<span class="badge badge--red">Absent</span>
+            {% elif rec.status == 'late'    %}<span class="badge badge--amber">Late</span>
+            {% else %}<span class="badge badge--purple">Excused</span>{% endif %}
+          </td>
+          <td style="color:#6B6A63;font-size:12px;">{{ rec.remarks|default:"—" }}</td>
+          <td style="color:#6B6A63;font-size:12px;">{{ rec.marked_by.get_full_name|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No attendance records found.</p>
+      <a href="{% url 'attendance:bulk_mark' %}" class="btn btn-primary">Mark Attendance</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

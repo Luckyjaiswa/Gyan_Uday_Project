@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Students{% endblock %}
+{% block nav_students %}active{% endblock %}
+
+{% block page_title %}Students{% endblock %}
+{% block page_subtitle %}
+  <span class="page-meta">{{ total_count }} student{{ total_count|pluralize }} enrolled</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:department_list' %}" class="btn btn-outline">Departments</a>
+  <a href="{% url 'students:faculty_list' %}" class="btn btn-outline">Faculty</a>
+  <a href="{% url 'students:create' %}" class="btn btn-primary">+ Enroll Student</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Search & Filter Bar -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-body" style="padding:14px 18px;">
+    <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:2;min-width:200px;">
+        <label class="form-label">Search</label>
+        {{ form.search }}
+      </div>
+      <div style="flex:1;min-width:150px;">
+        <label class="form-label">Department</label>
+        {{ form.department }}
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <label class="form-label">Year</label>
+        {{ form.year }}
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <label class="form-label">Status</label>
+        {{ form.status }}
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'students:list' %}" class="btn btn-outline" style="margin-left:6px;">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Students Table -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h3 class="card-title">All Students</h3>
+      <p class="card-subtitle">
+        Showing {{ students.start_index }}–{{ students.end_index }} of {{ students.paginator.count }}
+      </p>
+    </div>
+  </div>
+
+  <div class="card-body card-body--no-pad">
+    {% if students %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Roll No.</th>
+          <th>Department</th>
+          <th>Year / Sem</th>
+          <th>Attendance</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">
+                {{ student.get_initials }}
+              </div>
+              <div>
+                <div style="font-weight:500;">{{ student.get_full_name }}</div>
+                <div style="font-size:11px;color:#6B6A63;">{{ student.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ student.roll_number }}</td>
+          <td style="color:#6B6A63;">{{ student.department.name }}</td>
+          <td style="color:#6B6A63;">Y{{ student.year }} / S{{ student.semester }}</td>
+          <td>
+            {% with pct=student.get_attendance_percentage %}
+            {% if pct %}
+              <div class="att-cell">
+                <div class="att-bar">
+                  <div class="att-bar__fill
+                    {% if pct >= 85 %}att-bar__fill--green
+                    {% elif pct >= 70 %}att-bar__fill--amber
+                    {% else %}att-bar__fill--red{% endif %}"
+                    style="width:{{ pct }}%;">
+                  </div>
+                </div>
+                <span class="att-value">{{ pct }}%</span>
+              </div>
+            {% else %}
+              <span style="color:#9C9A92;font-size:12px;">No data</span>
+            {% endif %}
+            {% endwith %}
+          </td>
+          <td>
+            <span class="badge badge--{{ student.get_status_color }}">
+              {{ student.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'students:detail' student.pk %}" class="btn btn-sm btn-outline">View</a>
+              <a href="{% url 'students:update' student.pk %}" class="btn btn-sm btn-outline">Edit</a>
+              <a href="{% url 'students:delete' student.pk %}"
+                 class="btn btn-sm btn-outline"
+                 style="color:#C0392B;border-color:#F7C1C1;"
+                 data-confirm="Are you sure you want to remove {{ student.get_full_name }}?">
+                Delete
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if students.has_other_pages %}
+    <div class="pagination">
+      {% if students.has_previous %}
+        <a href="?page={{ students.previous_page_number }}&{{ request.GET.urlencode }}" class="page-link">‹</a>
+      {% endif %}
+      {% for num in students.paginator.page_range %}
+        {% if students.number == num %}
+          <span class="page-link active">{{ num }}</span>
+        {% elif num > students.number|add:'-3' and num < students.number|add:'3' %}
+          <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if students.has_next %}
+        <a href="?page={{ students.next_page_number }}" class="page-link">›</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="font-size:15px;margin-bottom:8px;">No students found.</p>
+      <a href="{% url 'students:create' %}" class="btn btn-primary">Enroll your first student</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

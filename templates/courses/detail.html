@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.code }}{% endblock %}
+{% block nav_courses %}active{% endblock %}
+{% block page_title %}{{ course.name }}{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ course.code }} &middot; {{ course.department.name }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'attendance:course_summary' course.pk %}" class="btn btn-outline">Attendance Report</a>
+  <a href="{% url 'courses:enroll' course.pk %}" class="btn btn-outline">+ Enroll Student</a>
+  <a href="{% url 'courses:update' course.pk %}" class="btn btn-outline">Edit</a>
+  <a href="{% url 'courses:list' %}" class="btn btn-outline">← Courses</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start;">
+
+  <!-- Info Card -->
+  <div class="card">
+    <div class="card-body">
+      <dl style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Course Code</dt>
+          <dd style="font-weight:600;font-family:'DM Mono',monospace;">{{ course.code }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Department</dt>
+          <dd style="font-weight:500;">{{ course.department.name }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Faculty</dt>
+          <dd style="font-weight:500;">{{ course.faculty.get_full_name|default:"Not assigned" }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Semester</dt>
+          <dd>{{ course.get_semester_display }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Credits</dt>
+          <dd>{{ course.credits }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Type</dt>
+          <dd>{{ course.get_course_type_display }}</dd>
+        </div>
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Enrolled Students</dt>
+          <dd style="font-weight:600;color:#2B5CE6;">{{ enrollments.count }}</dd>
+        </div>
+        {% if course.description %}
+        <div>
+          <dt style="font-size:11px;color:#6B6A63;margin-bottom:2px;">Description</dt>
+          <dd style="font-size:13px;color:#6B6A63;line-height:1.6;">{{ course.description }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+    </div>
+  </div>
+
+  <!-- Enrolled Students -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Enrolled Students</h3>
+        <p class="card-subtitle">{{ enrollments.count }} student{{ enrollments.count|pluralize }} enrolled</p>
+      </div>
+      <a href="{% url 'courses:enroll' course.pk %}" class="btn btn-sm btn-primary">+ Enroll</a>
+    </div>
+    <div class="card-body card-body--no-pad">
+      {% if enrollments %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Roll No.</th>
+            <th>Department</th>
+            <th>Enrolled On</th>
+            <th>Grade</th>
+            <th>Attendance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for enr in enrollments %}
+          <tr>
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">{{ enr.student.get_initials }}</div>
+                <a href="{% url 'students:detail' enr.student.pk %}" style="font-weight:500;color:#2B5CE6;">
+                  {{ enr.student.get_full_name }}
+                </a>
+              </div>
+            </td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ enr.student.roll_number }}</td>
+            <td style="color:#6B6A63;font-size:12px;">{{ enr.student.department.name }}</td>
+            <td style="color:#6B6A63;font-size:12px;">{{ enr.enrolled_on|date:"d M Y" }}</td>
+            <td>{{ enr.grade|default:"—" }}</td>
+            <td>
+              {% with pct=enr.student.get_attendance_percentage %}
+              {% if pct %}
+                <span style="font-family:'DM Mono',monospace;font-size:12px;
+                  color:{% if pct >= 75 %}#1D9E75{% else %}#C0392B{% endif %};">
+                  {{ pct }}%
+                </span>
+              {% else %}—{% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:32px;text-align:center;color:#6B6A63;">
+        No students enrolled yet.
+        <a href="{% url 'courses:enroll' course.pk %}">Enroll the first student →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
