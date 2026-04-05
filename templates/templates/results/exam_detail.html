@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exam.name }}{% endblock %}
+{% block nav_results %}active{% endblock %}
+{% block page_title %}{{ exam.name }}{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ exam.course.code }} &middot; {{ exam.exam_date|date:"d M Y" }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'results:bulk_mark_entry' exam.pk %}" class="btn btn-primary">Enter Marks</a>
+  <a href="{% url 'results:exam_list' %}" class="btn btn-outline">← Exams</a>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px;">
+  <div class="kpi-card">
+    <span class="kpi-label">Total Marks</span>
+    <span class="kpi-value kpi-value--blue" style="font-size:22px;">{{ exam.total_marks }}</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Avg Score</span>
+    <span class="kpi-value kpi-value--purple" style="font-size:22px;">
+      {{ avg_marks|floatformat:1|default:"—" }}
+    </span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Entries</span>
+    <span class="kpi-value" style="font-size:22px;color:#1A1A18;">{{ marks.count }}</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Passed</span>
+    <span class="kpi-value kpi-value--green" style="font-size:22px;">{{ pass_count }}</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Failed</span>
+    <span class="kpi-value kpi-value--red" style="font-size:22px;">{{ fail_count }}</span>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start;">
+
+  <!-- Marks Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Student Marks</h3>
+      <p class="card-subtitle" style="margin-left:auto;">Passing: {{ exam.passing_marks }} / {{ exam.total_marks }}</p>
+    </div>
+    <div class="card-body card-body--no-pad">
+      {% if marks %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Student</th>
+            <th>Marks</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mark in marks %}
+          <tr>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:#9C9A92;">{{ forloop.counter }}</td>
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">{{ mark.student.get_initials }}</div>
+                <div>
+                  <a href="{% url 'results:student_result_card' mark.student.pk %}" style="font-weight:500;color:#2B5CE6;">
+                    {{ mark.student.get_full_name }}
+                  </a>
+                  <div style="font-size:11px;color:#6B6A63;">{{ mark.student.roll_number }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-weight:600;font-size:15px;">
+              {% if mark.is_absent %}
+                <span style="color:#9C9A92;">AB</span>
+              {% else %}
+                {{ mark.marks_obtained|floatformat:1 }}
+              {% endif %}
+            </td>
+            <td>
+              {% if not mark.is_absent %}
+              <div class="att-cell">
+                <div class="att-bar">
+                  <div class="att-bar__fill
+                    {% if mark.percentage >= 75 %}att-bar__fill--green
+                    {% elif mark.percentage >= 40 %}att-bar__fill--amber
+                    {% else %}att-bar__fill--red{% endif %}"
+                    style="width:{{ mark.percentage }}%;">
+                  </div>
+                </div>
+                <span class="att-value">{{ mark.percentage }}%</span>
+              </div>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <span class="badge badge--{{ mark.get_grade_color }}">{{ mark.grade }}</span>
+            </td>
+            <td>
+              {% if mark.is_absent %}
+                <span class="badge badge--gray">Absent</span>
+              {% elif mark.marks_obtained >= exam.passing_marks %}
+                <span class="badge badge--green">Pass</span>
+              {% else %}
+                <span class="badge badge--red">Fail</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:#6B6A63;">
+        No marks entered yet.
+        <a href="{% url 'results:bulk_mark_entry' exam.pk %}" style="color:#2B5CE6;">Enter marks →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Grade Distribution -->
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Grade Distribution</h3></div>
+    <div class="card-body">
+      {% if grade_dist %}
+      {% for gd in grade_dist %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="width:32px;font-weight:600;font-size:13px;">{{ gd.grade }}</span>
+        <div style="flex:1;height:6px;background:#F0EEE8;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;background:#2B5CE6;border-radius:3px;
+            width:{% widthratio gd.count marks.count 100 %}%;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;color:#6B6A63;min-width:24px;">{{ gd.count }}</span>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:#9C9A92;font-size:13px;">No data yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

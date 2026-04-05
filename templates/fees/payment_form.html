@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Record Payment{% endblock %}
+{% block nav_fees %}active{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'fees:detail' fee.pk %}" class="btn btn-outline">← Fee Detail</a>{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:18px;max-width:780px;align-items:start;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Payment Details</h3></div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (₹) *</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<p class="form-error">{{ form.amount.errors.0 }}</p>{% endif %}
+            <p style="font-size:11px;color:#9C9A92;margin-top:3px;">Max: ₹{{ fee.amount_due|floatformat:0 }}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Date *</label>
+            {{ form.payment_date }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Payment Method *</label>
+            {{ form.method }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Transaction ID</label>
+            {{ form.transaction_id }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          {{ form.remarks }}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn btn-primary">Save Payment</button>
+          <a href="{% url 'fees:detail' fee.pk %}" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Fee Summary</h3></div>
+    <div class="card-body">
+      <dl style="display:flex;flex-direction:column;gap:12px;">
+        <div><dt style="font-size:11px;color:#6B6A63;">Student</dt>
+          <dd style="font-weight:500;">{{ fee.student.get_full_name }}</dd></div>
+        <div><dt style="font-size:11px;color:#6B6A63;">Total Billed</dt>
+          <dd style="font-weight:500;">₹{{ fee.total_amount|floatformat:0 }}</dd></div>
+        <div><dt style="font-size:11px;color:#6B6A63;">Already Paid</dt>
+          <dd style="font-weight:500;color:#1D9E75;">₹{{ fee.amount_paid|floatformat:0 }}</dd></div>
+        <div><dt style="font-size:11px;color:#6B6A63;">Balance Due</dt>
+          <dd style="font-weight:600;color:#C0392B;font-size:18px;">₹{{ fee.amount_due|floatformat:0 }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}

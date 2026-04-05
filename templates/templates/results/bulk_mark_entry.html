@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Enter Marks{% endblock %}
+{% block nav_results %}active{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}
+  <span class="page-meta">{{ exam.course.code }} &middot; {{ exam.exam_date|date:"d M Y" }} &middot; Out of {{ exam.total_marks }}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'results:exam_detail' exam.pk %}" class="btn btn-outline">← Exam Detail</a>
+{% endblock %}
+
+{% block content %}
+{% if enrollments %}
+<form method="post">
+  {% csrf_token %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Enter Marks for {{ enrollments.count }} Student{{ enrollments.count|pluralize }}</h3>
+        <p class="card-subtitle">Leave blank to skip. Marks auto-compute grade on save.</p>
+      </div>
+      <button type="submit" class="btn btn-primary">Save All Marks</button>
+    </div>
+    <div class="card-body card-body--no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Roll No.</th>
+            <th>Student Name</th>
+            <th>Marks (out of {{ exam.total_marks }})</th>
+            <th>Absent</th>
+            <th>Remarks</th>
+            <th>Current Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for enr in enrollments %}
+          {% with s=enr.student existing=existing_marks|default:{} %}
+          <tr>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ s.roll_number }}</td>
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">{{ s.get_initials }}</div>
+                {{ s.get_full_name }}
+              </div>
+            </td>
+            <td style="width:140px;">
+              <input
+                type="number"
+                name="marks_{{ s.pk }}"
+                class="form-control"
+                style="width:120px;font-family:'DM Mono',monospace;"
+                min="0"
+                max="{{ exam.total_marks }}"
+                step="0.5"
+                {% if s.pk in existing_marks %}value="{{ existing_marks|default:'' }}"{% endif %}
+                placeholder="0–{{ exam.total_marks }}"
+              />
+            </td>
+            <td style="text-align:center;">
+              <input
+                type="checkbox"
+                name="absent_{{ s.pk }}"
+                style="width:18px;height:18px;cursor:pointer;"
+                {% if s.pk in existing_marks and existing_marks.s_pk.is_absent %}checked{% endif %}
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="remarks_{{ s.pk }}"
+                class="form-control"
+                style="width:140px;font-size:12px;"
+                placeholder="Optional"
+              />
+            </td>
+            <td>
+              {% if s.pk in existing_marks %}
+                {% with m=existing_marks %}
+                <span class="badge badge--blue">{{ m }}</span>
+                {% endwith %}
+              {% else %}
+                <span style="color:#9C9A92;font-size:12px;">Not entered</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 18px;border-top:1px solid rgba(0,0,0,0.08);display:flex;justify-content:flex-end;">
+      <button type="submit" class="btn btn-primary">Save All Marks</button>
+    </div>
+  </div>
+</form>
+{% else %}
+<div class="card">
+  <div class="card-body" style="padding:48px;text-align:center;color:#6B6A63;">
+    <p style="margin-bottom:8px;">No students enrolled in {{ exam.course.code }} yet.</p>
+    <a href="{% url 'courses:enroll' exam.course.pk %}" class="btn btn-primary">Enroll Students</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

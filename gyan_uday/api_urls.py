@@ -1,7 +1,27 @@
 """
-GyanUday — API URL Configuration (Phase 5)
-All REST API endpoints are registered here using DRF routers.
-This file is a stub in Phase 1; fully populated in Phase 5.
+GyanUday — Master API URL Configuration (Phase 5)
+
+All REST endpoints are registered here.
+Base URL: /api/
+
+JWT Auth endpoints:
+  POST /api/token/          → get access + refresh tokens
+  POST /api/token/refresh/  → refresh access token
+  POST /api/token/verify/   → verify a token
+
+Students API:
+  /api/students/            → CRUD
+  /api/departments/         → CRUD
+  /api/faculty/             → Read-only
+
+Courses API:
+  /api/courses/             → CRUD
+  /api/enrollments/         → CRUD
+
+Attendance API:
+  /api/attendance/          → CRUD
+  /api/attendance/summary/  → aggregated stats
+  /api/attendance/department-stats/ → chart data
 """
 
 from django.urls import path, include
@@ -12,15 +32,13 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
-    # JWT Token endpoints
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # ── JWT Token endpoints ──────────────────────────────────
+    path('token/',         TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(),   name='token_refresh'),
+    path('token/verify/',  TokenVerifyView.as_view(),    name='token_verify'),
 
-    # App-level API routes (added phase by phase)
-    # path('students/', include('students.api_urls')),
-    # path('courses/', include('courses.api_urls')),
-    # path('attendance/', include('attendance.api_urls')),
-    # path('fees/', include('fees.api_urls')),
-    # path('results/', include('results.api_urls')),
+    # ── App API routes ───────────────────────────────────────
+    path('', include('students.api_urls')),
+    path('', include('courses.api_urls')),
+    path('', include('attendance.api_urls')),
 ]

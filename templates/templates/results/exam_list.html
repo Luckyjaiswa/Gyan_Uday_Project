@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Examinations{% endblock %}
+{% block nav_results %}active{% endblock %}
+{% block page_title %}Examinations{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ exams.count }} exam{{ exams.count|pluralize }} scheduled</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'results:activity_log' %}" class="btn btn-outline">Activity Log</a>
+  <a href="{% url 'results:exam_create' %}" class="btn btn-primary">+ Schedule Exam</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if exams %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Exam Name</th>
+          <th>Course</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Total Marks</th>
+          <th>Avg Score</th>
+          <th>Entries</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exam in exams %}
+        <tr>
+          <td style="font-weight:500;">{{ exam.name }}</td>
+          <td>
+            <span class="badge badge--blue" style="font-family:'DM Mono',monospace;">{{ exam.course.code }}</span>
+            <span style="font-size:12px;color:#6B6A63;margin-left:6px;">{{ exam.course.name }}</span>
+          </td>
+          <td><span class="badge badge--purple">{{ exam.get_exam_type_display }}</span></td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ exam.exam_date|date:"d M Y" }}</td>
+          <td style="text-align:center;">{{ exam.total_marks }}</td>
+          <td style="text-align:center;font-weight:500;color:#2B5CE6;">
+            {% if exam.avg_marks %}{{ exam.avg_marks|floatformat:1 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:center;">
+            <span class="badge badge--green">{{ exam.marks_count }}</span>
+          </td>
+          <td>
+            {% if exam.status == 'upcoming'  %}<span class="badge badge--blue">Upcoming</span>
+            {% elif exam.status == 'ongoing'  %}<span class="badge badge--amber">Ongoing</span>
+            {% elif exam.status == 'completed'%}<span class="badge badge--green">Completed</span>
+            {% else %}<span class="badge badge--red">Cancelled</span>{% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'results:exam_detail' exam.pk %}" class="btn btn-sm btn-outline">View</a>
+              <a href="{% url 'results:bulk_mark_entry' exam.pk %}" class="btn btn-sm btn-outline" style="color:#1D9E75;">Enter Marks</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No exams scheduled yet.</p>
+      <a href="{% url 'results:exam_create' %}" class="btn btn-primary">Schedule First Exam</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

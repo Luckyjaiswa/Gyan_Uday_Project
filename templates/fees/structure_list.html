@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Fee Structures{% endblock %}
+{% block nav_fees %}active{% endblock %}
+{% block page_title %}Fee Structures{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'fees:structure_create' %}" class="btn btn-primary">+ Add Structure</a>
+  <a href="{% url 'fees:list' %}" class="btn btn-outline">← Fee Records</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if structures %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Academic Year</th>
+          <th>Semester</th>
+          <th>Tuition</th>
+          <th>Exam</th>
+          <th>Library</th>
+          <th>Other</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in structures %}
+        <tr>
+          <td style="font-weight:500;">{{ s.department.name }}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ s.academic_year }}</td>
+          <td style="text-align:center;">{{ s.semester }}</td>
+          <td>₹{{ s.tuition_fee|floatformat:0 }}</td>
+          <td>₹{{ s.exam_fee|floatformat:0 }}</td>
+          <td>₹{{ s.library_fee|floatformat:0 }}</td>
+          <td>₹{{ s.other_fee|floatformat:0 }}</td>
+          <td style="font-weight:600;color:#2B5CE6;">₹{{ s.total_fee|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No fee structures defined yet.</p>
+      <a href="{% url 'fees:structure_create' %}" class="btn btn-primary">Add First Structure</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

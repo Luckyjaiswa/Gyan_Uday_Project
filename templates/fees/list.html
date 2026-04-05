@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Management{% endblock %}
+{% block nav_fees %}active{% endblock %}
+{% block page_title %}Fee Management{% endblock %}
+{% block page_subtitle %}<span class="page-meta">Academic Year 2025–26</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'fees:structure_list' %}" class="btn btn-outline">Fee Structures</a>
+  <a href="{% url 'fees:create' %}" class="btn btn-primary">+ New Fee Record</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- KPI Summary -->
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+  <div class="kpi-card">
+    <span class="kpi-label">Total Billed</span>
+    <span class="kpi-value kpi-value--blue" style="font-size:22px;">₹{{ total_due|floatformat:0 }}</span>
+    <span class="kpi-delta kpi-delta--neutral">Across all records</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Total Collected</span>
+    <span class="kpi-value kpi-value--green" style="font-size:22px;">₹{{ total_paid|floatformat:0 }}</span>
+    <span class="kpi-delta kpi-delta--up">Payments received</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Pending Amount</span>
+    <span class="kpi-value kpi-value--amber" style="font-size:22px;">₹{{ total_pending|floatformat:0 }}</span>
+    <span class="kpi-delta kpi-delta--down">Still outstanding</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Pending Records</span>
+    <span class="kpi-value kpi-value--red" style="font-size:22px;">{{ pending_count }}</span>
+    <span class="kpi-delta kpi-delta--neutral">Awaiting payment</span>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-body" style="padding:14px 18px;">
+    <form method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:2;min-width:200px;">
+        <label class="form-label">Search Student</label>
+        <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Name or roll number..." />
+      </div>
+      <div style="flex:1;min-width:150px;">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="">All Status</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'fees:list' %}" class="btn btn-outline" style="margin-left:6px;">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Fee Records Table -->
+<div class="card">
+  <div class="card-body card-body--no-pad">
+    {% if fees %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Academic Year</th>
+          <th>Semester</th>
+          <th>Total Due</th>
+          <th>Paid</th>
+          <th>Balance</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fee in fees %}
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="avatar-sm" style="background:#EEF2FD;color:#185FA5;">{{ fee.student.get_initials }}</div>
+              <div>
+                <div style="font-weight:500;">{{ fee.student.get_full_name }}</div>
+                <div style="font-size:11px;color:#6B6A63;">{{ fee.student.roll_number }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ fee.academic_year }}</td>
+          <td style="text-align:center;">{{ fee.semester }}</td>
+          <td style="font-weight:500;">₹{{ fee.total_amount|floatformat:0 }}</td>
+          <td style="color:#1D9E75;font-weight:500;">₹{{ fee.amount_paid|floatformat:0 }}</td>
+          <td style="{% if fee.amount_due > 0 %}color:#C0392B;{% else %}color:#1D9E75;{% endif %}font-weight:500;">
+            ₹{{ fee.amount_due|floatformat:0 }}
+          </td>
+          <td style="font-size:12px;color:#6B6A63;">{{ fee.due_date|date:"d M Y" }}</td>
+          <td><span class="badge badge--{{ fee.get_status_color }}">{{ fee.get_status_display }}</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'fees:detail' fee.pk %}" class="btn btn-sm btn-outline">View</a>
+              {% if not fee.is_fully_paid %}
+              <a href="{% url 'fees:payment_create' fee.pk %}" class="btn btn-sm btn-outline" style="color:#1D9E75;">Pay</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      <p style="margin-bottom:8px;">No fee records found.</p>
+      <a href="{% url 'fees:create' %}" class="btn btn-primary">Create Fee Record</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

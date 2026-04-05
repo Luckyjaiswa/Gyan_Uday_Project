@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block nav_fees %}active{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'fees:list' %}" class="btn btn-outline">← Fee List</a>{% endblock %}
+
+{% block content %}
+<div style="max-width:560px;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{{ page_title }}</h3></div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Student *</label>
+          {{ form.student }}
+          {% if form.student.errors %}<p class="form-error">{{ form.student.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Academic Year *</label>
+            {{ form.academic_year }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Semester *</label>
+            {{ form.semester }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Total Amount (₹) *</label>
+            {{ form.total_amount }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date *</label>
+            {{ form.due_date }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          {{ form.remarks }}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn btn-primary">{{ action }} Fee Record</button>
+          <a href="{% url 'fees:list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

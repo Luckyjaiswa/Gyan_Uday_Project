@@ -105,25 +105,46 @@ def home(request):
             'pk':          s.pk,
         })
 
-    # ── Activity Feed — pulled from ActivityLog (written by signals) ──
+    # ── Activity Feed (recent fee payments + enrolled students) ─
     activities = []
-    try:
-        from results.models import ActivityLog
-        logs = ActivityLog.objects.select_related('actor').order_by('-created_at')[:6]
-        for log in logs:
-            activities.append({
-                'color': log.color,
-                'text':  log.description,
-                'time':  log.created_at.strftime('%d %b, %I:%M %p'),
-                'by':    log.actor.get_full_name() if log.actor else 'System',
-            })
-    except Exception:
-        pass
 
-    if not activities:
-        activities = [
-            {'color': 'blue', 'text': 'Welcome to GyanUday University Portal', 'time': 'Now', 'by': 'System'},
-        ]
+    recent_payments = (
+        Payment.objects
+        .select_related('fee__student', 'received_by')
+        .filter(status='completed')
+        .order_by('-created_at')[:3]
+    )
+    for p in recent_payments:
+        activities.append({
+            'color': 'green',
+            'text':  f'Payment of ₹{int(p.amount)} received from {p.fee.student.get_full_name()}',
+            'time':  p.created_at.strftime('%d %b, %I:%M %p'),
+            'by':    p.received_by.get_full_name() if p.received_by else 'Finance Dept.',
+        })
+
+    recent_enrollments = (
+        Student.objects
+        .select_related('department')
+        .order_by('-created_at')[:2]
+    )
+    for s in recent_enrollments:
+        activities.append({
+            'color': 'blue',
+            'text':  f'{s.get_full_name()} enrolled in {s.department.name}',
+            'time':  s.created_at.strftime('%d %b, %I:%M %p'),
+            'by':    'Admissions Office',
+        })
+
+    overdue_fees = Fee.objects.filter(
+        status='overdue'
+    ).select_related('student').order_by('-due_date')[:2]
+    for f in overdue_fees:
+        activities.append({
+            'color': 'red',
+            'text':  f'Fee overdue for {f.student.get_full_name()} — ₹{int(f.amount_due)} pending',
+            'time':  f.due_date.strftime('%d %b %Y'),
+            'by':    'Finance Dept.',
+        })
 
     context = {
         'page_title':    'Academic Overview',

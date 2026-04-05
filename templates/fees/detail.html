@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Detail{% endblock %}
+{% block nav_fees %}active{% endblock %}
+{% block page_title %}Fee Detail{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ fee.student.get_full_name }} &middot; {{ fee.academic_year }} Sem {{ fee.semester }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  {% if not fee.is_fully_paid %}
+    <a href="{% url 'fees:payment_create' fee.pk %}" class="btn btn-primary">+ Record Payment</a>
+  {% endif %}
+  <a href="{% url 'fees:list' %}" class="btn btn-outline">← Fee List</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;">
+
+  <!-- Fee Summary Card -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card">
+      <div class="card-body">
+        <div style="text-align:center;padding:8px 0 16px;">
+          <div style="font-size:32px;font-weight:700;
+            color:{% if fee.is_fully_paid %}#1D9E75{% elif fee.status == 'overdue' %}#C0392B{% else %}#BA7517{% endif %};">
+            ₹{{ fee.amount_due|floatformat:0 }}
+          </div>
+          <p style="font-size:13px;color:#6B6A63;margin-top:4px;">Remaining Balance</p>
+          <div style="margin-top:10px;">
+            <span class="badge badge--{{ fee.get_status_color }}">{{ fee.get_status_display }}</span>
+          </div>
+        </div>
+        <hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:12px 0;" />
+        <dl style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;">
+            <dt style="font-size:12px;color:#6B6A63;">Total Billed</dt>
+            <dd style="font-weight:500;">₹{{ fee.total_amount|floatformat:0 }}</dd>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <dt style="font-size:12px;color:#6B6A63;">Amount Paid</dt>
+            <dd style="font-weight:500;color:#1D9E75;">₹{{ fee.amount_paid|floatformat:0 }}</dd>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <dt style="font-size:12px;color:#6B6A63;">Due Date</dt>
+            <dd style="font-size:12px;">{{ fee.due_date|date:"d M Y" }}</dd>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <dt style="font-size:12px;color:#6B6A63;">Academic Year</dt>
+            <dd style="font-size:12px;font-family:'DM Mono',monospace;">{{ fee.academic_year }}</dd>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <dt style="font-size:12px;color:#6B6A63;">Semester</dt>
+            <dd style="font-size:12px;">{{ fee.semester }}</dd>
+          </div>
+        </dl>
+        <!-- Progress Bar -->
+        {% if fee.total_amount > 0 %}
+        <div style="margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#6B6A63;margin-bottom:4px;">
+            <span>Payment progress</span>
+            <span>{{ fee.amount_paid|floatformat:0 }} / {{ fee.total_amount|floatformat:0 }}</span>
+          </div>
+          <div style="height:6px;background:#F0EEE8;border-radius:3px;overflow:hidden;">
+            <div style="height:100%;background:#1D9E75;border-radius:3px;
+              width:{% widthratio fee.amount_paid fee.total_amount 100 %}%;
+              transition:width 0.4s ease;"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <p style="font-size:12px;color:#6B6A63;margin-bottom:6px;">Student</p>
+        <a href="{% url 'students:detail' fee.student.pk %}" style="font-weight:500;color:#2B5CE6;">
+          {{ fee.student.get_full_name }}
+        </a>
+        <p style="font-size:12px;color:#6B6A63;margin-top:2px;">{{ fee.student.roll_number }}</p>
+        <p style="font-size:12px;color:#6B6A63;margin-top:2px;">{{ fee.student.department.name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment History -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Payment History</h3>
+        <p class="card-subtitle">{{ payments.count }} payment{{ payments.count|pluralize }} recorded</p>
+      </div>
+      {% if not fee.is_fully_paid %}
+        <a href="{% url 'fees:payment_create' fee.pk %}" class="btn btn-sm btn-primary">+ Record Payment</a>
+      {% endif %}
+    </div>
+    <div class="card-body card-body--no-pad">
+      {% if payments %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Transaction ID</th>
+            <th>Status</th>
+            <th>Received By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ p.payment_date|date:"d M Y" }}</td>
+            <td style="font-weight:600;color:#1D9E75;">₹{{ p.amount|floatformat:0 }}</td>
+            <td><span class="badge badge--blue">{{ p.get_method_display }}</span></td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:#6B6A63;">{{ p.transaction_id|default:"—" }}</td>
+            <td>
+              {% if p.status == 'completed' %}<span class="badge badge--green">Completed</span>
+              {% elif p.status == 'pending' %}<span class="badge badge--amber">Pending</span>
+              {% elif p.status == 'failed'  %}<span class="badge badge--red">Failed</span>
+              {% else %}<span class="badge badge--purple">Refunded</span>{% endif %}
+            </td>
+            <td style="font-size:12px;color:#6B6A63;">{{ p.received_by.get_full_name|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:#6B6A63;">
+        No payments recorded yet.
+        <a href="{% url 'fees:payment_create' fee.pk %}" style="color:#2B5CE6;">Record first payment →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

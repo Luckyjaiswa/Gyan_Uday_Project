@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}API Reference{% endblock %}
+{% block page_title %}REST API Reference{% endblock %}
+{% block page_subtitle %}<span class="page-meta">Django REST Framework — Phase 5</span>{% endblock %}
+
+{% block topbar_actions %}
+  <span class="badge badge--green" style="font-family:'DM Mono',monospace;">Base: /api/</span>
+{% endblock %}
+
+{% block content %}
+
+<!-- JWT Auth Section -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-header">
+    <h3 class="card-title">Step 1 — Get JWT Token</h3>
+    <p class="card-subtitle">Authenticate to get an access token, then use it in all API requests</p>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="auth-username" class="form-control" value="{{ request.user.username }}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="auth-password" class="form-control" placeholder="Your password" />
+        </div>
+        <button onclick="getToken()" class="btn btn-primary">Get Token</button>
+      </div>
+      <div>
+        <label class="form-label">Access Token (copy this)</label>
+        <textarea id="token-output" class="form-control" rows="5" readonly
+          style="font-family:'DM Mono',monospace;font-size:11px;resize:none;"
+          placeholder="Token will appear here after login..."></textarea>
+        <p style="font-size:11px;color:#6B6A63;margin-top:6px;">
+          Use in requests: <code style="background:#F0EEE8;padding:2px 6px;border-radius:4px;">Authorization: Bearer &lt;token&gt;</code>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Tester -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-header">
+    <h3 class="card-title">Step 2 — Test an Endpoint</h3>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap;">
+      <div>
+        <label class="form-label">Method</label>
+        <select id="req-method" class="form-control" style="width:100px;">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PATCH</option>
+          <option>DELETE</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <label class="form-label">URL</label>
+        <input type="text" id="req-url" class="form-control" value="/api/students/" />
+      </div>
+      <button onclick="sendRequest()" class="btn btn-primary">Send Request</button>
+      <button onclick="clearResponse()" class="btn btn-outline">Clear</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Request Body (JSON — for POST/PATCH only)</label>
+      <textarea id="req-body" class="form-control" rows="4"
+        style="font-family:'DM Mono',monospace;font-size:12px;"
+        placeholder='{"roll_number": "CS2024001", "first_name": "Arjun", ...}'></textarea>
+    </div>
+    <div>
+      <label class="form-label">Response</label>
+      <pre id="response-output"
+        style="background:#1A1A18;color:#9FE1CB;padding:16px;border-radius:10px;font-size:12px;font-family:'DM Mono',monospace;min-height:120px;overflow-x:auto;white-space:pre-wrap;">
+Click "Send Request" to see the response here...</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint Reference -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+  <!-- Students -->
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Students</h3></div>
+    <div class="card-body card-body--no-pad">
+      {% for ep in student_endpoints %}
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(0,0,0,0.06);cursor:pointer;"
+           onclick="loadEndpoint('{{ ep.method }}','{{ ep.url }}')">
+        <span class="badge badge--{% if ep.method == 'GET' %}blue{% elif ep.method == 'POST' %}green{% elif ep.method == 'PATCH' %}amber{% else %}red{% endif %}"
+          style="width:52px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;">
+          {{ ep.method }}
+        </span>
+        <code style="font-size:12px;font-family:'DM Mono',monospace;color:#2B5CE6;">{{ ep.url }}</code>
+        <span style="font-size:11px;color:#9C9A92;margin-left:auto;">{{ ep.desc }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Courses & Attendance -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Courses &amp; Enrollments</h3></div>
+      <div class="card-body card-body--no-pad">
+        {% for ep in course_endpoints %}
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(0,0,0,0.06);cursor:pointer;"
+             onclick="loadEndpoint('{{ ep.method }}','{{ ep.url }}')">
+          <span class="badge badge--{% if ep.method == 'GET' %}blue{% elif ep.method == 'POST' %}green{% else %}amber{% endif %}"
+            style="width:52px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;">
+            {{ ep.method }}
+          </span>
+          <code style="font-size:12px;font-family:'DM Mono',monospace;color:#2B5CE6;">{{ ep.url }}</code>
+          <span style="font-size:11px;color:#9C9A92;margin-left:auto;">{{ ep.desc }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Attendance</h3></div>
+      <div class="card-body card-body--no-pad">
+        {% for ep in attendance_endpoints %}
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(0,0,0,0.06);cursor:pointer;"
+             onclick="loadEndpoint('{{ ep.method }}','{{ ep.url }}')">
+          <span class="badge badge--{% if ep.method == 'GET' %}blue{% elif ep.method == 'POST' %}green{% else %}amber{% endif %}"
+            style="width:52px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;">
+            {{ ep.method }}
+          </span>
+          <code style="font-size:12px;font-family:'DM Mono',monospace;color:#2B5CE6;">{{ ep.url }}</code>
+          <span style="font-size:11px;color:#9C9A92;margin-left:auto;">{{ ep.desc }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">JWT Auth</h3></div>
+      <div class="card-body card-body--no-pad">
+        {% for ep in auth_endpoints %}
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(0,0,0,0.06);cursor:pointer;"
+             onclick="loadEndpoint('{{ ep.method }}','{{ ep.url }}')">
+          <span class="badge badge--green"
+            style="width:52px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;">
+            POST
+          </span>
+          <code style="font-size:12px;font-family:'DM Mono',monospace;color:#2B5CE6;">{{ ep.url }}</code>
+          <span style="font-size:11px;color:#9C9A92;margin-left:auto;">{{ ep.desc }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let accessToken = '';
+
+async function getToken() {
+  const username = document.getElementById('auth-username').value;
+  const password = document.getElementById('auth-password').value;
+  try {
+    const res = await fetch('/api/token/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (data.access) {
+      accessToken = data.access;
+      document.getElementById('token-output').value = data.access;
+    } else {
+      document.getElementById('token-output').value = JSON.stringify(data, null, 2);
+    }
+  } catch (e) {
+    document.getElementById('token-output').value = 'Error: ' + e.message;
+  }
+}
+
+async function sendRequest() {
+  const method = document.getElementById('req-method').value;
+  const url    = document.getElementById('req-url').value;
+  const body   = document.getElementById('req-body').value;
+  const output = document.getElementById('response-output');
+
+  output.textContent = 'Loading...';
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-CSRFToken': getCookie('csrftoken'),
+  };
+  if (accessToken) {
+    headers['Authorization'] = 'Bearer ' + accessToken;
+  }
+
+  const options = { method, headers };
+  if (['POST', 'PATCH', 'PUT'].includes(method) && body.trim()) {
+    options.body = body;
+  }
+
+  try {
+    const res  = await fetch(url, options);
+    const data = await res.json();
+    output.textContent = `HTTP ${res.status} ${res.statusText}\n\n${JSON.stringify(data, null, 2)}`;
+    output.style.color = res.ok ? '#9FE1CB' : '#F09595';
+  } catch (e) {
+    output.textContent = 'Error: ' + e.message;
+    output.style.color = '#F09595';
+  }
+}
+
+function loadEndpoint(method, url) {
+  document.getElementById('req-method').value = method;
+  document.getElementById('req-url').value    = url;
+  document.getElementById('req-body').value   = '';
+  document.getElementById('response-output').textContent = 'Click "Send Request" to test this endpoint...';
+  document.getElementById('response-output').style.color = '#9FE1CB';
+}
+
+function clearResponse() {
+  document.getElementById('response-output').textContent = 'Cleared.';
+}
+
+function getCookie(name) {
+  let val = null;
+  document.cookie.split(';').forEach(c => {
+    const t = c.trim();
+    if (t.startsWith(name + '=')) val = decodeURIComponent(t.substring(name.length + 1));
+  });
+  return val;
+}
+</script>
+{% endblock %}

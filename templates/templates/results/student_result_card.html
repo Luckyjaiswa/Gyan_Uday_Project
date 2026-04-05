@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Result Card — {{ student.get_full_name }}{% endblock %}
+{% block nav_marks %}active{% endblock %}
+{% block page_title %}Result Card{% endblock %}
+{% block page_subtitle %}<span class="page-meta">{{ student.get_full_name }} &middot; {{ student.roll_number }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline">← Student Profile</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Summary Stats -->
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+  <div class="kpi-card">
+    <span class="kpi-label">Exams Taken</span>
+    <span class="kpi-value kpi-value--blue" style="font-size:22px;">{{ stats.total|default:0 }}</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Avg Score</span>
+    <span class="kpi-value kpi-value--purple" style="font-size:22px;">
+      {{ stats.avg_pct|floatformat:1|default:"—" }}
+    </span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Highest Marks</span>
+    <span class="kpi-value kpi-value--green" style="font-size:22px;">
+      {{ stats.highest|floatformat:1|default:"—" }}
+    </span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Department</span>
+    <span class="kpi-value" style="font-size:16px;color:#534AB7;">{{ student.department.code }}</span>
+    <span class="kpi-delta kpi-delta--neutral">{{ student.department.name }}</span>
+  </div>
+</div>
+
+<!-- Marks Table -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">All Results</h3>
+  </div>
+  <div class="card-body card-body--no-pad">
+    {% if marks %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Exam</th>
+          <th>Course</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Marks</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mark in marks %}
+        <tr>
+          <td style="font-weight:500;">{{ mark.exam.name }}</td>
+          <td>
+            <span class="badge badge--blue" style="font-family:'DM Mono',monospace;font-size:10px;">
+              {{ mark.exam.course.code }}
+            </span>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">
+            {{ mark.exam.exam_date|date:"d M Y" }}
+          </td>
+          <td><span class="badge badge--purple" style="font-size:10px;">{{ mark.exam.get_exam_type_display }}</span></td>
+          <td style="font-weight:600;">
+            {% if mark.is_absent %}
+              <span style="color:#9C9A92;">Absent</span>
+            {% else %}
+              {{ mark.marks_obtained|floatformat:1 }} / {{ mark.exam.total_marks }}
+            {% endif %}
+          </td>
+          <td>
+            {% if not mark.is_absent %}
+            <div class="att-cell">
+              <div class="att-bar">
+                <div class="att-bar__fill
+                  {% if mark.percentage >= 75 %}att-bar__fill--green
+                  {% elif mark.percentage >= 40 %}att-bar__fill--amber
+                  {% else %}att-bar__fill--red{% endif %}"
+                  style="width:{{ mark.percentage }}%;">
+                </div>
+              </div>
+              <span class="att-value">{{ mark.percentage }}%</span>
+            </div>
+            {% else %}—{% endif %}
+          </td>
+          <td><span class="badge badge--{{ mark.get_grade_color }}">{{ mark.grade }}</span></td>
+          <td>
+            {% if mark.is_absent %}<span class="badge badge--gray">Absent</span>
+            {% elif mark.marks_obtained >= mark.exam.passing_marks %}<span class="badge badge--green">Pass</span>
+            {% else %}<span class="badge badge--red">Fail</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px;text-align:center;color:#6B6A63;">
+      No results recorded for this student yet.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
