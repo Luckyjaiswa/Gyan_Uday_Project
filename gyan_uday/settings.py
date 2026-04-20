@@ -1,26 +1,28 @@
 """
 GyanUday University - College Management System
-Django Settings
+Django Settings — works for local development AND Render deployment
 """
 
 import os
 from pathlib import Path
-from decouple import config
+from datetime import timedelta
 
-# ─────────────────────────────────────────────
-# BASE
-# ─────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-gyanuday-change-this-in-production-2024')
-
-DEBUG = config('DEBUG', default=True, cast=bool)
-
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,0.0.0.0',
-    cast=lambda v: [s.strip() for s in v.split(',')]
+# ─────────────────────────────────────────────
+# SECURITY
+# ─────────────────────────────────────────────
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-gyanuday-change-this-in-production-2024'
 )
+
+DEBUG = os.environ.get('DEBUG', 'FALSE') == 'True'
+
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,0.0.0.0'
+).split(',')
 
 
 # ─────────────────────────────────────────────
@@ -39,14 +41,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
 
-    # Project apps (added phase by phase)
-    'accounts',       # Phase 2
-    'students',       # Phase 3
-    'courses',        # Phase 4
-    'attendance',     # Phase 4
-    'fees',           # Phase 6
-    'results',        # Phase 7
-    'dashboard',      # Phase 6
+    # Project apps
+    'accounts',
+    'students',
+    'courses',
+    'attendance',
+    'fees',
+    'results',
+    'dashboard',
 ]
 
 
@@ -55,7 +57,7 @@ INSTALLED_APPS = [
 # ─────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',   # serves static files in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -99,23 +101,11 @@ DATABASES = {
     }
 }
 
-# To switch to PostgreSQL (Phase 7 / production), replace with:
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config('DB_NAME', default='gyanuday_db'),
-#         'USER': config('DB_USER', default='postgres'),
-#         'PASSWORD': config('DB_PASSWORD', default=''),
-#         'HOST': config('DB_HOST', default='localhost'),
-#         'PORT': config('DB_PORT', default='5432'),
-#     }
-# }
-
 
 # ─────────────────────────────────────────────
 # AUTH
 # ─────────────────────────────────────────────
-AUTH_USER_MODEL = 'accounts.User'   # Custom user model (Phase 2)
+AUTH_USER_MODEL = 'accounts.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -124,29 +114,29 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL          = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL= '/accounts/login/'
 
 
 # ─────────────────────────────────────────────
 # INTERNATIONALISATION
 # ─────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = 'Asia/Kolkata'
+USE_I18N      = True
+USE_TZ        = True
 
 
 # ─────────────────────────────────────────────
 # STATIC & MEDIA FILES
 # ─────────────────────────────────────────────
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL        = '/static/'
+STATICFILES_DIRS  = [BASE_DIR / 'static']
+STATIC_ROOT       = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
@@ -180,19 +170,17 @@ REST_FRAMEWORK = {
 # ─────────────────────────────────────────────
 # SIMPLE JWT
 # ─────────────────────────────────────────────
-from datetime import timedelta
-
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ROTATE_REFRESH_TOKENS':  True,
     'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 
 # ─────────────────────────────────────────────
-# MESSAGES (for flash notifications in templates)
+# MESSAGES
 # ─────────────────────────────────────────────
 from django.contrib.messages import constants as messages
 
